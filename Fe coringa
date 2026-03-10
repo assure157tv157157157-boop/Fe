@@ -532,3 +532,375 @@ player.CharacterAdded:Connect(function()
 	task.wait(1)
 	tool.Parent = player.Backpack
 end)
+
+
+
+
+
+
+
+
+-- LocalScript em StarterPlayerScripts
+-- Vereus com animações contínuas (sem bater no chão)
+
+local player = game.Players.LocalPlayer
+local mouse = player:GetMouse()
+local userInputService = game:GetService("UserInputService")
+local runService = game:GetService("RunService")
+
+-- Variáveis de estado
+local vereusParts = {}
+local hand1Weld, hand2Weld
+local originalTransparencies = {}
+local vereusActive = false
+local tool = nil
+
+-- Variáveis para animação
+local sine = 0
+local change = 0.5
+local animConnection = nil
+
+-- Função auxiliar para criar weld
+local function weldBetween(a, b)
+    local weld = Instance.new("Weld", a)
+    weld.Part0 = a
+    weld.Part1 = b
+    weld.C0 = a.CFrame:inverse() * b.CFrame
+    return weld
+end
+
+-- Cria todas as partes do Vereus
+local function createVereus()
+    local char = player.Character
+    if not char then return end
+    local head = char:FindFirstChild("Head")
+    local torso = char:FindFirstChild("Torso") or char:FindFirstChild("UpperTorso")
+    if not head or not torso then return end
+
+    vereusParts = {}
+
+    -- Cabeça grande
+    local bighead = Instance.new("Part", char)
+    bighead.Name = "BigHead"
+    bighead.Size = Vector3.new(4.75, 4.89, 4.77)
+    bighead.BrickColor = BrickColor.new("Really black")
+    bighead.CanCollide = false
+    bighead.Anchored = false
+    bighead.Locked = true
+    local headMesh = Instance.new("SpecialMesh", bighead)
+    headMesh.MeshType = "Head"
+    headMesh.Scale = Vector3.new(1.25, 1.25, 1.25)
+    table.insert(vereusParts, bighead)
+
+    -- Máscara
+    local mask = Instance.new("Part", char)
+    mask.Name = "Mask"
+    mask.Size = Vector3.new(0.1, 0.39, 0.1)
+    mask.BrickColor = BrickColor.new("White")
+    mask.Material = "Corroded Metal"
+    mask.CanCollide = false
+    mask.Anchored = false
+    mask.Locked = true
+    local maskMesh = Instance.new("SpecialMesh", mask)
+    maskMesh.MeshId = "rbxassetid://5158270"
+    maskMesh.TextureId = "rbxassetid://128212042"
+    maskMesh.Scale = Vector3.new(0.7, 0.5, 0.5)
+    table.insert(vereusParts, mask)
+
+    -- Chifres
+    local horns = Instance.new("Part", char)
+    horns.Name = "Horns"
+    horns.Size = Vector3.new(0.1, 0.1, 0.1)
+    horns.BrickColor = BrickColor.new("Really black")
+    horns.Material = "Slate"
+    horns.CanCollide = false
+    horns.Anchored = false
+    horns.Locked = true
+    local hornsMesh = Instance.new("SpecialMesh", horns)
+    hornsMesh.MeshId = "rbxassetid://434078905"
+    hornsMesh.Scale = Vector3.new(13, 12, 12)
+    table.insert(vereusParts, horns)
+
+    -- Mão direita
+    local hand1 = Instance.new("Part", char)
+    hand1.Name = "Hand1"
+    hand1.Size = Vector3.new(0.1, 0.1, 0.1)
+    hand1.BrickColor = BrickColor.new("White")
+    hand1.Material = "Slate"
+    hand1.CanCollide = false
+    hand1.Anchored = false
+    hand1.Locked = true
+    local hand1Mesh = Instance.new("SpecialMesh", hand1)
+    hand1Mesh.MeshId = "rbxassetid://37241605"
+    hand1Mesh.Scale = Vector3.new(8, 8, 8)
+    table.insert(vereusParts, hand1)
+
+    -- Decalques da mão direita
+    local slatez = Instance.new("Decal", hand1)
+    slatez.Texture = "rbxassetid://647441616"
+    slatez.Color3 = Color3.new(0,0,0)
+    slatez.Face = "Top"
+    local slatez2 = Instance.new("Decal", hand1)
+    slatez2.Texture = "rbxassetid://647417318"
+    slatez2.Color3 = Color3.new(0,0,0)
+    slatez2.Face = "Top"
+    local slatez3 = Instance.new("Decal", hand1)
+    slatez3.Texture = "rbxassetid://647410994"
+    slatez3.Color3 = Color3.new(1,1,1)
+    slatez3.Face = "Top"
+    local slatez4 = Instance.new("Decal", hand1)
+    slatez4.Texture = "rbxassetid://647413967"
+    slatez4.Color3 = Color3.new(1,1,1)
+    slatez4.Face = "Top"
+
+    -- Mão esquerda
+    local hand2 = Instance.new("Part", char)
+    hand2.Name = "Hand2"
+    hand2.Size = Vector3.new(0.1, 0.1, 0.1)
+    hand2.BrickColor = BrickColor.new("White")
+    hand2.Material = "Slate"
+    hand2.CanCollide = false
+    hand2.Anchored = false
+    hand2.Locked = true
+    local hand2Mesh = Instance.new("SpecialMesh", hand2)
+    hand2Mesh.MeshId = "rbxassetid://2899129749"
+    hand2Mesh.Scale = Vector3.new(0.8, 0.8, 0.8)
+    table.insert(vereusParts, hand2)
+
+    -- Decalques da mão esquerda
+    local slaten = Instance.new("Decal", hand2)
+    slaten.Texture = "rbxassetid://647441616"
+    slaten.Color3 = Color3.new(0,0,0)
+    slaten.Face = "Top"
+    local slaten2 = Instance.new("Decal", hand2)
+    slaten2.Texture = "rbxassetid://647417318"
+    slaten2.Color3 = Color3.new(0,0,0)
+    slaten2.Face = "Top"
+
+    -- Olhos
+    local eyeball1 = Instance.new("Part", char)
+    eyeball1.Name = "Eyeball1"
+    eyeball1.Size = Vector3.new(3.25, 3.25, 3.25)
+    eyeball1.BrickColor = BrickColor.new("Really black")
+    eyeball1.Material = "Glass"
+    eyeball1.Shape = "Ball"
+    eyeball1.CanCollide = false
+    eyeball1.Anchored = false
+    eyeball1.Locked = true
+    table.insert(vereusParts, eyeball1)
+
+    local eyeball2 = Instance.new("Part", char)
+    eyeball2.Name = "Eyeball2"
+    eyeball2.Size = Vector3.new(3.25, 3.25, 3.25)
+    eyeball2.BrickColor = BrickColor.new("Really black")
+    eyeball2.Material = "Glass"
+    eyeball2.Shape = "Ball"
+    eyeball2.CanCollide = false
+    eyeball2.Anchored = false
+    eyeball2.Locked = true
+    table.insert(vereusParts, eyeball2)
+
+    local eyeball3 = Instance.new("Part", char)
+    eyeball3.Name = "Eyeball3"
+    eyeball3.Size = Vector3.new(0.4, 0.4, 0.4)
+    eyeball3.BrickColor = BrickColor.new("Crimson")
+    eyeball3.Material = "Neon"
+    eyeball3.Shape = "Ball"
+    eyeball3.CanCollide = false
+    eyeball3.Anchored = false
+    eyeball3.Locked = true
+    local eyeball3Mesh = Instance.new("SpecialMesh", eyeball3)
+    eyeball3Mesh.MeshType = "Sphere"
+    table.insert(vereusParts, eyeball3)
+
+    local eyeball4 = Instance.new("Part", char)
+    eyeball4.Name = "Eyeball4"
+    eyeball4.Size = Vector3.new(0.4, 0.4, 0.4)
+    eyeball4.BrickColor = BrickColor.new("Crimson")
+    eyeball4.Material = "Neon"
+    eyeball4.Shape = "Ball"
+    eyeball4.CanCollide = false
+    eyeball4.Anchored = false
+    eyeball4.Locked = true
+    local eyeball4Mesh = Instance.new("SpecialMesh", eyeball4)
+    eyeball4Mesh.MeshType = "Sphere"
+    table.insert(vereusParts, eyeball4)
+
+    -- Decalques adicionais (máscara e chifres)
+    local slateh = Instance.new("Decal", mask)
+    slateh.Texture = "rbxassetid://647441616"
+    slateh.Color3 = Color3.new(0,0,0)
+    slateh.Face = "Top"
+    local slateh2 = Instance.new("Decal", mask)
+    slateh2.Texture = "rbxassetid://647417318"
+    slateh2.Color3 = Color3.new(0,0,0)
+    slateh2.Face = "Top"
+    local slateh3 = Instance.new("Decal", mask)
+    slateh3.Texture = "rbxassetid://647410994"
+    slateh3.Color3 = Color3.new(1,1,1)
+    slateh3.Face = "Top"
+    local slateh4 = Instance.new("Decal", mask)
+    slateh4.Texture = "rbxassetid://647413967"
+    slateh4.Color3 = Color3.new(1,1,1)
+    slateh4.Face = "Top"
+    local slateh5 = Instance.new("Decal", mask)
+    slateh5.Texture = "rbxassetid://64739326f6"
+    slateh5.Color3 = Color3.new(1,1,1)
+    slateh5.Face = "Top"
+
+    local slatex = Instance.new("Decal", horns)
+    slatex.Texture = "rbxassetid://647441616"
+    slatex.Color3 = Color3.new(0,0,0)
+    slatex.Face = "Top"
+    local slatex2 = Instance.new("Decal", horns)
+    slatex2.Texture = "rbxassetid://647417318"
+    slatex2.Color3 = Color3.new(0,0,0)
+    slatex2.Face = "Top"
+    local slatex3 = Instance.new("Decal", horns)
+    slatex3.Texture = "rbxassetid://647410994"
+    slatex3.Color3 = Color3.new(1,1,1)
+    slatex3.Face = "Top"
+    local slatex4 = Instance.new("Decal", horns)
+    slatex4.Texture = "rbxassetid://647413967"
+    slatex4.Color3 = Color3.new(1,1,1)
+    slatex4.Face = "Top"
+    local slatex5 = Instance.new("Decal", horns)
+    slatex5.Texture = "rbxassetid://64739326f6"
+    slatex5.Color3 = Color3.new(1,1,1)
+    slatex5.Face = "Top"
+
+    -- Welds
+    local bigheadWeld = weldBetween(bighead, head)
+    bigheadWeld.C0 = CFrame.new(0, -0.2, 0.5)
+
+    local maskWeld = weldBetween(mask, bighead)
+    maskWeld.C0 = CFrame.new(0, -2.4, 0) * CFrame.Angles(math.rad(90), 0, 0)
+
+    local hornsWeld = weldBetween(horns, bighead)
+    hornsWeld.C0 = CFrame.new(0, -3.3, 0.82) * CFrame.Angles(0, math.rad(180), 0)
+
+    hand1Weld = weldBetween(hand1, torso)
+    hand1Weld.C0 = CFrame.new(4.5, -5, 6) * CFrame.Angles(math.rad(10), math.rad(-5), math.rad(-36))
+
+    hand2Weld = weldBetween(hand2, torso)
+    hand2Weld.C0 = CFrame.new(-5, -5, 6) * CFrame.Angles(math.rad(13), math.rad(36), math.rad(35))
+
+    local eye1Weld = weldBetween(eyeball1, head)
+    eye1Weld.C0 = CFrame.new(0.6, -0.2, 1.25)
+    local eye2Weld = weldBetween(eyeball2, head)
+    eye2Weld.C0 = CFrame.new(-0.6, -0.2, 1.25)
+    local eye3Weld = weldBetween(eyeball3, head)
+    eye3Weld.C0 = CFrame.new(1.2, -0.3, 2.65)
+    local eye4Weld = weldBetween(eyeball4, head)
+    eye4Weld.C0 = CFrame.new(-1.2, -0.3, 2.65)
+
+    -- Invisível por padrão
+    for _, part in ipairs(vereusParts) do
+        part.Transparency = 1
+    end
+end
+
+-- Loop de animação (idle)
+local function animate()
+    while vereusActive do
+        sine = sine + change
+        if hand1Weld and hand2Weld then
+            -- Animação da mão direita
+            hand1Weld.C0 = hand1Weld.C0:lerp(
+                CFrame.new(4.5, -5 + 0.5 * math.sin(sine/14), 6) *
+                CFrame.Angles(math.rad(10 + 1 * math.sin(sine/13)), math.rad(-5 + 5 * math.sin(sine/12)), math.rad(-36 - 4 * math.sin(sine/11))),
+                0.2
+            )
+            -- Animação da mão esquerda
+            hand2Weld.C0 = hand2Weld.C0:lerp(
+                CFrame.new(-5, -5 + 0.5 * math.sin(sine/14), 6) *
+                CFrame.Angles(math.rad(13 - 3 * math.sin(sine/12)), math.rad(36 - 3 * math.sin(sine/13)), math.rad(35 + 2 * math.sin(sine/11))),
+                0.2
+            )
+        end
+        runService.RenderStepped:wait()
+    end
+end
+
+-- Ativar Vereus
+local function activateVereus()
+    if vereusActive then return end
+    local char = player.Character
+    if not char then return end
+
+    -- Esconder jogador
+    for _, part in ipairs(char:GetDescendants()) do
+        if part:IsA("BasePart") and part ~= char:FindFirstChild("HumanoidRootPart") then
+            originalTransparencies[part] = part.Transparency
+            part.Transparency = 1
+        end
+    end
+
+    -- Criar partes se necessário
+    if #vereusParts == 0 then
+        createVereus()
+    end
+
+    -- Mostrar Vereus
+    for _, part in ipairs(vereusParts) do
+        part.Transparency = 0
+    end
+
+    vereusActive = true
+    -- Iniciar animação em uma thread separada
+    coroutine.wrap(animate)()
+end
+
+-- Desativar Vereus
+local function deactivateVereus()
+    if not vereusActive then return end
+    vereusActive = false
+
+    -- Restaurar jogador
+    for part, trans in pairs(originalTransparencies) do
+        if part and part.Parent then
+            part.Transparency = trans
+        end
+    end
+    originalTransparencies = {}
+
+    -- Esconder Vereus
+    for _, part in ipairs(vereusParts) do
+        if part and part.Parent then
+            part.Transparency = 1
+        end
+    end
+end
+
+-- Criar ferramenta
+local function createTool()
+    if tool and tool.Parent then return end
+
+    tool = Instance.new("Tool")
+    tool.Name = "Vereus Controller"
+    tool.RequiresHandle = false
+    tool.Parent = player.Backpack
+
+    tool.Equipped:Connect(activateVereus)
+    tool.Unequipped:Connect(deactivateVereus)  -- desativa ao desequipar
+    tool.Activated:Connect(function()
+        if vereusActive then
+            deactivateVereus()
+        end
+    end)
+end
+
+-- Inicialização
+player.CharacterAdded:Connect(function()
+    vereusParts = {}
+    hand1Weld, hand2Weld = nil, nil
+    vereusActive = false
+    originalTransparencies = {}
+    task.wait(1)
+    createTool()
+end)
+
+if player.Character then
+    task.wait(1)
+    createTool()
+end
