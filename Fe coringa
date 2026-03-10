@@ -1,0 +1,534 @@
+-- SERVIÇOS
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Remotes = ReplicatedStorage:WaitForChild("Remotes")
+
+local LP = Players.LocalPlayer
+local Char = LP.Character or LP.CharacterAdded:Wait()
+
+local Humanoid = Char:WaitForChild("Humanoid")
+
+--==================================
+-- LIMPAR SKIN ATUAL
+--==================================
+
+local Desc = Humanoid:GetAppliedDescription()
+
+-- remover acessórios
+for _,acc in ipairs(Desc:GetAccessories(true)) do
+    if acc.AssetId and tonumber(acc.AssetId) then
+        Remotes.Wear:InvokeServer(tonumber(acc.AssetId))
+        task.wait(0.2)
+    end
+end
+
+-- remover roupas
+if tonumber(Desc.Shirt) then
+    Remotes.Wear:InvokeServer(tonumber(Desc.Shirt))
+    task.wait(0.2)
+end
+
+if tonumber(Desc.Pants) then
+    Remotes.Wear:InvokeServer(tonumber(Desc.Pants))
+    task.wait(0.2)
+end
+
+-- remover face
+if tonumber(Desc.Face) then
+    Remotes.Wear:InvokeServer(tonumber(Desc.Face))
+    task.wait(0.2)
+end
+
+task.wait(0.5)
+
+--==================================
+-- TROCAR PARTES DO CORPO
+--==================================
+
+local argsBody = {
+    [1] = {
+        [1] = 92757812011061,
+        [2] = 99519402284266,
+        [3] = 115905570886697,
+        [4] = 0,
+        [5] = 0,
+        [6] = 17390899717
+    }
+}
+
+Remotes.ChangeCharacterBody:InvokeServer(unpack(argsBody))
+
+task.wait(0.5)
+
+--==================================
+-- COR DO CORPO
+--==================================
+
+Remotes.ChangeBodyColor:FireServer("Pastel brown")
+
+task.wait(0.3)
+
+--==================================
+-- ITENS DA SKIN
+--==================================
+
+local itens = {
+
+    106860085580913,
+    855783877,
+    855776103,
+    6280071665,
+    10544135791,
+
+    754637456,
+    5319909330,
+    892265784
+
+}
+
+for _,id in ipairs(itens) do
+    Remotes.Wear:InvokeServer(id)
+    task.wait(0.3)
+end
+
+
+
+
+local player = game.Players.LocalPlayer
+
+local tool = Instance.new("Tool")
+tool.Name = "BlackHole Card"
+tool.RequiresHandle = false
+tool.Parent = player.Backpack
+
+tool.Activated:Connect(function()
+	local char = player.Character or player.CharacterAdded:Wait()
+	local root = char:WaitForChild("HumanoidRootPart")
+
+	local sound = Instance.new("Sound")
+	sound.SoundId = "rbxassetid://127651469503276"
+	sound.Volume = 5
+	sound.Parent = root
+	sound:Play()
+
+	local pos = root.CFrame * CFrame.new(0, 2, -6)
+
+	-- ========== CARTA ==========
+	local card = Instance.new("Part")
+	card.Size = Vector3.new(8, 13, 0.3)
+	card.Material = Enum.Material.Glass
+	card.BrickColor = BrickColor.new("White")
+	card.Anchored = true
+	card.CanCollide = false
+	card.CFrame = pos
+	card.Parent = workspace
+
+	local decal = Instance.new("Decal")
+	decal.Texture = "rbxassetid://1880203893"
+	decal.Face = Enum.NormalId.Front
+	decal.Parent = card
+
+	local decal2 = decal:Clone()
+	decal2.Face = Enum.NormalId.Back
+	decal2.Parent = card
+
+	local edges = Instance.new("SelectionBox", card)
+	edges.Adornee = card
+	edges.LineThickness = 0.1
+	edges.Color3 = Color3.new(1, 1, 1)
+	edges.Transparency = 0.5
+
+	local cardParticles = Instance.new("ParticleEmitter", card)
+	cardParticles.Texture = "rbxassetid://476250367"
+	cardParticles.Rate = 50
+	cardParticles.SpreadAngle = Vector2.new(180, 180)
+	cardParticles.Speed = NumberRange.new(5, 10)
+	cardParticles.Lifetime = NumberRange.new(0.5, 1)
+	cardParticles.Transparency = NumberSequence.new(0.5)
+	cardParticles.Color = ColorSequence.new(Color3.new(1, 1, 1))
+	cardParticles.Size = NumberSequence.new(0.5)
+	cardParticles.Rotation = NumberRange.new(0, 360)
+
+	-- Aparecer (RÁPIDO)
+	card.Transparency = 1
+	for i = 1, 10 do
+		card.Transparency -= 0.1
+		edges.Transparency = card.Transparency + 0.3
+		task.wait()
+	end
+
+	-- Girar (RÁPIDO)
+	for i = 1, 90 do
+		card.CFrame = card.CFrame * CFrame.Angles(0, math.rad(18), 0)
+		task.wait(0.008)
+	end
+
+	task.wait(0.3)
+
+	-- ========== BLACK HOLE ==========
+	local blackHolePos = card.Position
+
+	local blackHoleTarget = Instance.new("Part")
+	blackHoleTarget.Size = Vector3.new(1, 1, 1)
+	blackHoleTarget.Transparency = 1
+	blackHoleTarget.Anchored = true
+	blackHoleTarget.CanCollide = false
+	blackHoleTarget.Position = blackHolePos
+	blackHoleTarget.Name = "BlackHoleTarget"
+	blackHoleTarget.Parent = workspace
+
+	local targetAttachment = Instance.new("Attachment", blackHoleTarget)
+	targetAttachment.Name = "TargetAttachment"
+
+	local ring1 = Instance.new("Part")
+	ring1.Size = Vector3.new(1, 1, 1)
+	ring1.Shape = Enum.PartType.Cylinder
+	ring1.Material = Enum.Material.Neon
+	ring1.BrickColor = BrickColor.new("Really black")
+	ring1.Anchored = true
+	ring1.CanCollide = false
+	ring1.CFrame = CFrame.new(blackHolePos) * CFrame.Angles(math.pi / 2, 0, 0)
+	ring1.Parent = workspace
+	ring1.Transparency = 0.2
+
+	local ring2 = ring1:Clone()
+	ring2.Parent = workspace
+	ring2.Size = Vector3.new(3, 0.5, 3)
+	ring2.Transparency = 0.3
+
+	local suctionParticles = Instance.new("ParticleEmitter", ring1)
+	suctionParticles.Texture = "rbxassetid://476250367"
+	suctionParticles.Rate = 200
+	suctionParticles.SpreadAngle = Vector2.new(360, 360)
+	suctionParticles.Speed = NumberRange.new(5, 15)
+	suctionParticles.Lifetime = NumberRange.new(0.3, 0.6)
+	suctionParticles.Transparency = NumberSequence.new(0.2)
+	suctionParticles.Color = ColorSequence.new(Color3.new(0, 0, 0))
+	suctionParticles.Size = NumberSequence.new(1)
+	suctionParticles.Rotation = NumberRange.new(0, 360)
+	suctionParticles.Drag = 5
+
+	-- Expandir anéis (RÁPIDO)
+	for i = 1, 15 do
+		ring1.Size = ring1.Size + Vector3.new(4, 0, 4)
+		ring2.Size = ring2.Size + Vector3.new(4, 0, 4)
+		ring1.Transparency = math.min(ring1.Transparency + 0.04, 0.8)
+		ring2.Transparency = math.min(ring2.Transparency + 0.04, 0.8)
+		task.wait()
+	end
+
+	-- ========== NETWORK ==========
+	if not getgenv().Network then
+		getgenv().Network = {
+			BaseParts = {},
+			Velocity = Vector3.new(15, 15, 15),
+		}
+
+		Network.RetainPart = function(part)
+			if typeof(part) == "Instance" and part:IsA("BasePart") and part:IsDescendantOf(workspace) then
+				table.insert(Network.BaseParts, part)
+				part.CustomPhysicalProperties = PhysicalProperties.new(0, 0, 0, 0, 0)
+				part.CanCollide = false
+			end
+		end
+
+		game:GetService("RunService").Heartbeat:Connect(function()
+			pcall(function()
+				sethiddenproperty(player, "SimulationRadius", math.huge)
+			end)
+			for _, part in pairs(Network.BaseParts) do
+				if part and part:IsDescendantOf(workspace) then
+					part.Velocity = Network.Velocity
+				end
+			end
+		end)
+	end
+
+	-- ========== PUXAR OBJETOS ==========
+	local function getAllPullableParts()
+		local parts = {}
+		local ignore = { workspace:FindFirstChild("Terrain"), workspace:FindFirstChild("Baseplate"), card, ring1, ring2, blackHoleTarget }
+
+		for _, plr in ipairs(game.Players:GetPlayers()) do
+			if plr.Character then
+				table.insert(ignore, plr.Character)
+			end
+		end
+
+		local function addPart(part)
+			if part:IsA("BasePart") and not part.Anchored and not table.find(ignore, part) then
+				local isPlayerPart = false
+				for _, plr in ipairs(game.Players:GetPlayers()) do
+					if plr.Character and (part:IsDescendantOf(plr.Character) or part.Parent == plr.Character) then
+						isPlayerPart = true
+						break
+					end
+				end
+				if not isPlayerPart then
+					table.insert(parts, part)
+					Network.RetainPart(part)
+				end
+			end
+		end
+
+		for _, obj in ipairs(workspace:GetDescendants()) do
+			if obj:IsA("BasePart") then
+				addPart(obj)
+			end
+		end
+		return parts
+	end
+
+	local pullableParts = getAllPullableParts()
+
+	for _, part in ipairs(pullableParts) do
+		for _, child in ipairs(part:GetChildren()) do
+			if child:IsA("AlignPosition") or child:IsA("Torque") or child:IsA("Attachment") then
+				child:Destroy()
+			end
+		end
+
+		local att = Instance.new("Attachment", part)
+		local align = Instance.new("AlignPosition", part)
+		align.Attachment0 = att
+		align.Attachment1 = targetAttachment
+		align.MaxForce = 1e20
+		align.MaxVelocity = math.huge
+		align.Responsiveness = 500
+		align.RigidityEnabled = false
+
+		local torque = Instance.new("Torque", part)
+		torque.Attachment0 = att
+		torque.RelativeTo = Enum.ActuatorRelativeTo.World
+		torque.Torque = Vector3.new(math.random(-1e6, 1e6), math.random(-1e6, 1e6), math.random(-1e6, 1e6))
+	end
+
+	-- Orbs (RÁPIDO)
+	for i = 1, 150 do
+		local orb = Instance.new("Part")
+		orb.Shape = Enum.PartType.Ball
+		orb.Material = Enum.Material.Neon
+		orb.BrickColor = BrickColor.new("Really black")
+		orb.Size = Vector3.new(1.5, 1.5, 1.5)
+		orb.Anchored = true
+		orb.CanCollide = false
+		orb.Position = blackHolePos + Vector3.new(math.random(-50, 50), math.random(-50, 50), math.random(-50, 50))
+		orb.Parent = workspace
+
+		task.spawn(function()
+			for j = 1, 30 do
+				orb.Position = orb.Position:Lerp(blackHolePos, 0.15)
+				orb.Size -= Vector3.new(0.04, 0.04, 0.04)
+				orb.Transparency += 0.03
+				task.wait()
+			end
+			orb:Destroy()
+		end)
+		task.wait(0.002)
+	end
+
+	task.wait(1.5)
+
+	-- ========== BOLA CENTRAL ==========
+	local ball = Instance.new("Part")
+	ball.Shape = Enum.PartType.Ball
+	ball.Material = Enum.Material.Neon
+	ball.BrickColor = BrickColor.new("Really black")
+	ball.Size = Vector3.new(2, 2, 2)
+	ball.Anchored = true
+	ball.CanCollide = false
+	ball.Position = blackHolePos
+	ball.Parent = workspace
+
+	for i = 1, 20 do
+		ball.Size += Vector3.new(2.5, 2.5, 2.5)
+		task.wait()
+	end
+
+	-- ========== EXPLOSÃO ==========
+	for _, part in ipairs(pullableParts) do
+		if part and part.Parent then
+			for _, child in ipairs(part:GetChildren()) do
+				if child:IsA("AlignPosition") or child:IsA("Torque") then
+					child:Destroy()
+				end
+			end
+
+			local bodyVelocity = Instance.new("BodyVelocity")
+			bodyVelocity.MaxForce = Vector3.new(1e6, 1e6, 1e6)
+			bodyVelocity.Velocity = Vector3.new(math.random(-200, 200), math.random(100, 300), math.random(-200, 200))
+			bodyVelocity.Parent = part
+			game.Debris:AddItem(bodyVelocity, 3)
+		end
+	end
+
+	for i = 1, 80 do
+		local shard = Instance.new("Part")
+		shard.Material = Enum.Material.Neon
+		shard.BrickColor = BrickColor.new("Really black")
+		shard.Size = Vector3.new(1, 1, 1)
+		shard.Position = ball.Position
+		shard.Anchored = false
+		shard.CanCollide = false
+		shard.Parent = workspace
+
+		local vel = Instance.new("BodyVelocity")
+		vel.MaxForce = Vector3.new(999999, 999999, 999999)
+		vel.Velocity = Vector3.new(math.random(-250, 250), math.random(-250, 250), math.random(-250, 250))
+		vel.Parent = shard
+
+		game.Debris:AddItem(shard, 3)
+		task.wait(0.005)
+	end
+
+	local wave = Instance.new("Part")
+	wave.Shape = Enum.PartType.Ball
+	wave.Material = Enum.Material.Neon
+	wave.BrickColor = BrickColor.new("Really black")
+	wave.Anchored = true
+	wave.CanCollide = false
+	wave.Size = Vector3.new(1, 1, 1)
+	wave.Position = ball.Position
+	wave.Parent = workspace
+
+	for i = 1, 30 do
+		wave.Size += Vector3.new(10, 10, 10)
+		wave.Transparency += 0.03
+		task.wait()
+	end
+
+	ball:Destroy()
+	card:Destroy()
+	ring1:Destroy()
+	ring2:Destroy()
+	wave:Destroy()
+	blackHoleTarget:Destroy()
+end)
+
+
+
+
+
+
+
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local mouse = player:GetMouse()
+
+local tool = Instance.new("Tool")
+tool.Name = "Card explosion"
+tool.RequiresHandle = false
+tool.CanBeDropped = false
+tool.Parent = player.Backpack
+
+local card
+local following = false
+local angle = 0
+local root
+local equipped = false
+
+local function createCard()
+
+	card = Instance.new("Part")
+	card.Size = Vector3.new(16,24,1)
+	card.Anchored = true
+	card.CanCollide = false
+	card.Material = Enum.Material.Neon
+	card.Color = Color3.new(1,1,1)
+	card.Parent = workspace
+
+	local decal = Instance.new("Decal")
+	decal.Texture = "rbxassetid://1880203893"
+	decal.Face = Enum.NormalId.Front
+	decal.Parent = card
+
+	local decal2 = decal:Clone()
+	decal2.Face = Enum.NormalId.Back
+	decal2.Parent = card
+
+	following = true
+end
+
+local function startSpin()
+
+	task.spawn(function()
+		while following and equipped and card and card.Parent do
+
+			angle += 4
+
+			card.CFrame =
+				root.CFrame *
+				CFrame.new(0,18,0) *
+				CFrame.Angles(0,math.rad(angle),0)
+
+			task.wait()
+		end
+	end)
+
+end
+
+tool.Equipped:Connect(function()
+
+	equipped = true
+
+	local char = player.Character or player.CharacterAdded:Wait()
+	root = char:WaitForChild("HumanoidRootPart")
+
+	createCard()
+	startSpin()
+
+end)
+
+tool.Unequipped:Connect(function()
+
+	equipped = false
+	following = false
+
+	if card then
+		card:Destroy()
+	end
+
+end)
+
+tool.Activated:Connect(function()
+
+	if not following or not card then return end
+	following = false
+
+	local target = mouse.Hit.Position
+
+	for i = 1,25 do
+		card.CFrame = card.CFrame:Lerp(
+			CFrame.new(target) * CFrame.Angles(math.rad(90),0,0),
+			0.15
+		)
+		task.wait()
+	end
+
+	local explosion = Instance.new("Explosion")
+	explosion.Position = target
+	explosion.BlastRadius = 20
+	explosion.BlastPressure = 500000
+	explosion.Parent = workspace
+
+	task.wait(1)
+
+	if card then
+		card:Destroy()
+	end
+
+	-- só cria outra carta se ainda estiver segurando a tool
+	if equipped then
+		task.wait(0.3)
+		createCard()
+		startSpin()
+	end
+
+end)
+
+player.CharacterAdded:Connect(function()
+	task.wait(1)
+	tool.Parent = player.Backpack
+end)
